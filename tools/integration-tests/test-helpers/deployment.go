@@ -56,3 +56,7 @@ func (deployment *ghpcDeployment) SetBlueprint(blueprint string) error {
 func (deployment *ghpcDeployment) Redeploy() error {
 	return errors.New("not yet implemented")
 }
+
+func (deployment *ghpcDeployment) GetResources() (result []GcpResource, err error) {
+	return nil, errors.New("not yet implemented")
+}
