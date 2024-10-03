@@ -80,21 +80,26 @@ done
 STATUS=$(sed -r 's/.*([0-9]+)\s*$/\1/' <<<"${ser_log}" | uniq)
 # This specific text is monitored for in tests, do not change.
 INSPECT_OUTPUT_TEXT="To inspect the startup script output, please run:"
-if [[ "${STATUS}" == 0 ]]; then
-	echo "startup-script finished successfully"
-elif [[ "${STATUS}" == 1 ]]; then
-	echo "startup-script finished with errors, ${INSPECT_OUTPUT_TEXT}"
-	echo "${fetch_cmd}"
-elif [[ now -ge deadline ]]; then
+if [[ now -ge deadline ]]; then
+	# We exceeded the timeout
 	echo "startup-script timed out after ${TIMEOUT} seconds"
 	echo "${INSPECT_OUTPUT_TEXT}"
 	echo "${fetch_cmd}"
 	exit 1
-else
+elif ! [[ "${STATUS}" =~ '^[0-9]+$' ]]; then
+	# Value is not a number
 	echo "Invalid return status: '${STATUS}'"
 	echo "${INSPECT_OUTPUT_TEXT}"
 	echo "${fetch_cmd}"
 	exit 1
+elif [[ "${STATUS}" -eq 0 ]]; then
+	# Script finished successfully (exit_code == 0)
+	echo "startup-script finished successfully"
+elif [[ "${STATUS}" -ne 0 ]]; then
+	# Script failed (exit_code != 0)
+	echo "startup-script finished with errors (exit_code=${STATUS})"
+	echo "${INSPECT_OUTPUT_TEXT}"
+	echo "${fetch_cmd}"
 fi
 
 exit "${STATUS}"
