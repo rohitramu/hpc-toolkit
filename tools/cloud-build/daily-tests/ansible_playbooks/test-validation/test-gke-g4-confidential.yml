@@ -24,79 +24,79 @@
 
 - name: Run and verify G4 Confidential tests
   block:
-    - name: Run the G4 Confidential Verification test
-      delegate_to: localhost
-      ansible.builtin.shell: |
-        kubectl create -f {{ workspace }}/examples/gke-g4-confidential/g4-verification-test.yaml -v=9
-      args:
-        executable: /bin/bash
+  - name: Run the G4 Confidential Verification test
+    delegate_to: localhost
+    ansible.builtin.shell: |
+      kubectl create -f {{ workspace }}/examples/gke-g4-confidential/g4-verification-test.yaml -v=9
+    args:
+      executable: /bin/bash
 
-    - name: Wait for G4 Verification test to hit completion
-      delegate_to: localhost
-      ansible.builtin.shell: |
-        kubectl wait --for=condition=complete job/g4-verification-test --timeout=1200s
+  - name: Wait for G4 Verification test to hit completion
+    delegate_to: localhost
+    ansible.builtin.shell: |
+      kubectl wait --for=condition=complete job/g4-verification-test --timeout=1200s
 
-    - name: Fetch logs from the verification pod
-      delegate_to: localhost
-      ansible.builtin.shell: |
-        kubectl logs job/g4-verification-test
-      register: verification_logs
+  - name: Fetch logs from the verification pod
+    delegate_to: localhost
+    ansible.builtin.shell: |
+      kubectl logs job/g4-verification-test
+    register: verification_logs
 
-    - name: Ensure test output contains SUCCESS
-      ansible.builtin.assert:
-        that: "'SUCCESS: G4 GPU computation completed successfully!' in verification_logs.stdout"
-        fail_msg: "The Confidential Verification Test did not report SUCCESS."
+  - name: Ensure test output contains SUCCESS
+    ansible.builtin.assert:
+      that: "'SUCCESS: G4 GPU computation completed successfully!' in verification_logs.stdout"
+      fail_msg: "The Confidential Verification Test did not report SUCCESS."
 
-    - name: Run the G4 Confidential Storage test
-      delegate_to: localhost
-      ansible.builtin.shell: |
-        kubectl create -f {{ workspace }}/examples/gke-g4-confidential/g4-verification-storage-test.yaml -v=9
-      args:
-        executable: /bin/bash
+  - name: Run the G4 Confidential Storage test
+    delegate_to: localhost
+    ansible.builtin.shell: |
+      kubectl create -f {{ workspace }}/examples/gke-g4-confidential/g4-verification-storage-test.yaml -v=9
+    args:
+      executable: /bin/bash
 
-    - name: Wait for Storage test to hit completion
-      delegate_to: localhost
-      ansible.builtin.shell: |
-        kubectl wait --for=condition=complete job/g4-verification-storage-test --timeout=1200s
+  - name: Wait for Storage test to hit completion
+    delegate_to: localhost
+    ansible.builtin.shell: |
+      kubectl wait --for=condition=complete job/g4-verification-storage-test --timeout=1200s
 
-    - name: Fetch logs from the storage verification pod
-      delegate_to: localhost
-      ansible.builtin.shell: |
-        kubectl logs job/g4-verification-storage-test
-      register: storage_logs
+  - name: Fetch logs from the storage verification pod
+    delegate_to: localhost
+    ansible.builtin.shell: |
+      kubectl logs job/g4-verification-storage-test
+    register: storage_logs
 
-    - name: Ensure storage test output contains SUCCESS
-      ansible.builtin.assert:
-        that: "'SUCCESS: G4 GPU computation completed successfully!' in storage_logs.stdout"
-        fail_msg: "The Storage Verification Test did not report SUCCESS."
+  - name: Ensure storage test output contains SUCCESS
+    ansible.builtin.assert:
+      that: "'SUCCESS: G4 GPU computation completed successfully!' in storage_logs.stdout"
+      fail_msg: "The Storage Verification Test did not report SUCCESS."
 
   rescue:
-    - name: Fetch logs from verification pod on failure
-      delegate_to: localhost
-      ansible.builtin.shell: |
-        kubectl logs job/g4-verification-test || true
-      register: failed_verification_logs
+  - name: Fetch logs from verification pod on failure
+    delegate_to: localhost
+    ansible.builtin.shell: |
+      kubectl logs job/g4-verification-test || true
+    register: failed_verification_logs
 
-    - name: Print verification logs on failure
-      ansible.builtin.debug:
-        var: failed_verification_logs.stdout_lines
+  - name: Print verification logs on failure
+    ansible.builtin.debug:
+      var: failed_verification_logs.stdout_lines
 
-    - name: Fetch logs from storage verification pod on failure
-      delegate_to: localhost
-      ansible.builtin.shell: |
-        kubectl logs job/g4-verification-storage-test || true
-      register: failed_storage_logs
+  - name: Fetch logs from storage verification pod on failure
+    delegate_to: localhost
+    ansible.builtin.shell: |
+      kubectl logs job/g4-verification-storage-test || true
+    register: failed_storage_logs
 
-    - name: Print storage logs on failure
-      ansible.builtin.debug:
-        var: failed_storage_logs.stdout_lines
+  - name: Print storage logs on failure
+    ansible.builtin.debug:
+      var: failed_storage_logs.stdout_lines
 
-    - name: Fail the playbook
-      ansible.builtin.fail:
-        msg: "G4 Confidential Verification tests failed."
+  - name: Fail the playbook
+    ansible.builtin.fail:
+      msg: "G4 Confidential Verification tests failed."
 
   always:
-    - name: Clean up
-      delegate_to: localhost
-      ansible.builtin.shell: |
-        kubectl delete job g4-verification-test g4-verification-storage-test --ignore-not-found -v=9
+  - name: Clean up
+    delegate_to: localhost
+    ansible.builtin.shell: |
+      kubectl delete job g4-verification-test g4-verification-storage-test --ignore-not-found -v=9

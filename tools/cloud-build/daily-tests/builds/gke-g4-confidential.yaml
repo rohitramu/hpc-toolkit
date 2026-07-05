@@ -20,6 +20,8 @@ tags:
 - m.service-account
 - m.vpc
 - m.kubectl-apply
+- m.gke-job-template
+- m.gke-storage
 
 substitutions:
   _TEST_PREFIX: "" # Default to no prefix
