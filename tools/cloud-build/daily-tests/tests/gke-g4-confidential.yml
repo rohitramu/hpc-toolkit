@@ -22,8 +22,8 @@ workspace: /workspace
 blueprint_yaml: "{{ workspace }}/examples/gke-g4-confidential/gke-g4-confidential.yaml"
 # Using a static network name to prevent VPC exhaustion per reviewer feedback
 network: "gke-g4-conf-net-0"
-region: us-central1
-zone: us-central1-b
+region: us-south1
+zone: us-south1-a
 remote_node: "{{ deployment_name }}-remote-node-0"
 machine_type: g4-standard-48
 static_node_count: 2
@@ -33,6 +33,8 @@ cli_deployment_vars:
   machine_type: "{{ machine_type }}"
   static_node_count: "{{ static_node_count }}"
   authorized_cidr: "{{ build_ip.stdout }}/32"
+  enable_confidential_storage: true
+  disk_encryption_kms_key: "projects/{{ project }}/locations/us-south1/keyRings/gke-g4-storage-keyring/cryptoKeys/gke-g4-storage-key"
 custom_vars:
   project: "{{ project }}"
 post_deploy_tests:
