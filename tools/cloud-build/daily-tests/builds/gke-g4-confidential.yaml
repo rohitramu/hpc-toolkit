@@ -57,6 +57,17 @@ steps:
     echo '      name_prefix: remote-node'                >> $${EXAMPLE_BP}
     echo '      add_deployment_name_before_prefix: true' >> $${EXAMPLE_BP}
     echo ''
+    echo '  - id: job_template_hostname'                       >> $${EXAMPLE_BP}
+    echo '    source: modules/compute/gke-job-template'        >> $${EXAMPLE_BP}
+    echo '    use: [g4-pool]'                                  >> $${EXAMPLE_BP}
+    echo '    settings:'                                       >> $${EXAMPLE_BP}
+    echo '      image: nvidia/cuda:12.6.0-base-ubuntu22.04'    >> $${EXAMPLE_BP}
+    echo '      command:'                                      >> $${EXAMPLE_BP}
+    echo '      - nvidia-smi'                                  >> $${EXAMPLE_BP}
+    echo '      node_count: 1'                                 >> $${EXAMPLE_BP}
+    echo '      k8s_service_account_name: workload-identity-k8s-sa' >> $${EXAMPLE_BP}
+    echo '    outputs: [instructions]'                         >> $${EXAMPLE_BP}
+    echo ''
     bash tools/add_ttl_label.sh "$${EXAMPLE_BP}"
     ansible-playbook tools/cloud-build/daily-tests/ansible_playbooks/base-integration-test.yml \
         --user=sa_106486320838376751393 --extra-vars="project=${PROJECT_ID} build=$${BUILD_ID_SHORT} full_build_id=$BUILD_ID" \
