@@ -35,6 +35,11 @@ cli_deployment_vars:
   authorized_cidr: "{{ build_ip.stdout }}/32"
   enable_confidential_storage: true
   disk_encryption_kms_key: "projects/{{ project }}/locations/us-south1/keyRings/gke-g4-storage-keyring/cryptoKeys/gke-g4-storage-key"
+  network_name_0: "{{ network }}"
+  subnetwork_name_0: "gke-g4-conf-sub-0"
+  network_name_1: "gke-g4-conf-net-1"
+  subnetwork_name_1: "gke-g4-conf-sub-1"
+  reservation: "g4-reservation-0"
 custom_vars:
   project: "{{ project }}"
 post_deploy_tests:
