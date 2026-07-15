@@ -369,6 +369,9 @@ func (g *GKEOrchestrator) GeneratePathwaysManifest(job orchestrator.JobDefinitio
 		// WorkerImage defaults to ServerImage if not explicitly set
 		job.Pathways.WorkerImage = job.Pathways.ServerImage
 	}
+	if job.Pathways.MTCEnabled && job.Pathways.RamdiskDirectory == "" {
+		job.Pathways.RamdiskDirectory = "/tmp/mtc_checkpoints"
+	}
 
 	tmpl, err := yamltemplate.New("pathways_jobset.tmpl").ParseFS(templatesFS, "templates/pathways_jobset.tmpl")
 	if err != nil {
@@ -1240,12 +1243,7 @@ func (g *GKEOrchestrator) prepareJobSetTemplateData(opts ManifestOptions, comman
 		exclusiveTopology = "alpha.jobset.sigs.k8s.io/exclusive-topology: cloud.google.com/gke-nodepool"
 	}
 
-	workerBackoffLimit := 0
-	if opts.Pathways.ElasticSlices > 0 {
-		workerBackoffLimit = opts.Pathways.MaxSliceRestarts * opts.NodesPerSlice
-	} else {
-		workerBackoffLimit = opts.NodesPerSlice * 4
-	}
+	workerBackoffLimit := 2048000
 
 	var proxyArgsList []string
 	if opts.Pathways.ProxyArgs != "" {
