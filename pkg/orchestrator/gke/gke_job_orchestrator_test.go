@@ -76,6 +76,7 @@ func NewMockExecutor(responses map[string][]shell.CommandResult) *MockExecutor {
 func newTestGKEOrchestrator(executor Executor) *GKEOrchestrator {
 	return &GKEOrchestrator{
 		executor:                 executor,
+		kubeClient:               &MockKubeClient{Namespace: "default"},
 		machineTypeClient:        &MockMachineTypeClient{Executor: executor},
 		acceleratorToMachineType: make(map[string]string),
 		machineCapCache:          make(map[string]MachineTypeCap),
@@ -129,6 +130,13 @@ func (m *MockKubeClient) DeleteJobSet(namespace string, name string) error {
 
 func (m *MockKubeClient) ListJobSets(labelSelector string) ([]orchestrator.JobStatus, error) {
 	return []orchestrator.JobStatus{}, m.Err
+}
+
+func (m *MockKubeClient) GetCurrentNamespace() (string, error) {
+	if m.Namespace != "" {
+		return m.Namespace, nil
+	}
+	return "default", m.Err
 }
 
 func TestGenerateGKEManifest_Accelerators(t *testing.T) {
