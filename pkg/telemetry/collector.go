@@ -69,6 +69,8 @@ func (c *Collector) CollectMetrics(errorCode int, err error) {
 	c.metadata[ZONE] = getZone(c.blueprint)
 	c.metadata[MODULES] = getModules(bpModulesList)
 	c.metadata[STATIC_NODE_COUNTS] = getStaticNodeCounts(c.blueprint)
+	c.metadata[DYNAMIC_MIN_NODE_COUNTS] = getDynamicNodeCounts(c.blueprint, "min")
+	c.metadata[DYNAMIC_MAX_NODE_COUNTS] = getDynamicNodeCounts(c.blueprint, "max")
 	c.metadata[OS_NAME] = getOSName()
 	c.metadata[OS_VERSION] = getOSVersion()
 	c.metadata[TERRAFORM_VERSION] = getTerraformVersion()
@@ -300,6 +302,28 @@ func getStaticNodeCounts(bp config.Blueprint) string {
 	// Expected return format: "g4-standard-48:3,a3-ultragpu-8g:2"
 	return strings.ReplaceAll(strings.Trim(string(counts), "{}"), `"`, "")
 
+}
+
+func getDynamicNodeCounts(bp config.Blueprint, kind string) string {
+	counts := make(map[string]int)
+	targetKeys := dynamicMinNodeCountSettings
+	if kind == "max" {
+		targetKeys = dynamicMaxNodeCountSettings
+	}
+
+	for _, m := range config.GetAllBpModules(&bp) {
+		moduleCounts := getModuleDynamicNodeCounts(m, bp, targetKeys)
+		for mt, cnt := range moduleCounts {
+			if cnt > 0 {
+				counts[mt] += cnt
+			}
+		}
+	}
+	countsJSON, err := json.Marshal(counts)
+	if err != nil || len(counts) == 0 {
+		return ""
+	}
+	return strings.ReplaceAll(strings.Trim(string(countsJSON), "{}"), "\"", "")
 }
 
 func getOSName() string {
