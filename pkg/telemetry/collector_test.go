@@ -26,6 +26,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -2946,6 +2947,39 @@ func TestGetDynamicNodeCounts(t *testing.T) {
 			got := getDynamicNodeCounts(tc.bp, tc.kind)
 			if got != tc.want {
 				t.Errorf("getDynamicNodeCounts() = %q; want %q", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestGetIsAIAssisted(t *testing.T) {
+	tests := []struct {
+		name     string
+		bp       config.Blueprint
+		expected string
+	}{
+		{
+			name:     "returns true when AIAssisted is true",
+			bp:       config.Blueprint{AIAssisted: true},
+			expected: "true",
+		},
+		{
+			name:     "returns false when AIAssisted is false",
+			bp:       config.Blueprint{AIAssisted: false},
+			expected: "false",
+		},
+		{
+			name:     "returns false when AIAssisted is not set",
+			bp:       config.Blueprint{},
+			expected: "false",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			actual := strconv.FormatBool(tt.bp.AIAssisted)
+			if actual != tt.expected {
+				t.Errorf("getIsAIAssisted() = %v, want %v", actual, tt.expected)
 			}
 		})
 	}
