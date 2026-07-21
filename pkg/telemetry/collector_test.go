@@ -609,6 +609,135 @@ func TestGetStorageType(t *testing.T) {
 			want: "pd-ssd",
 		},
 		{
+			name: "Extracts standalone Netapp Volume source",
+			bp: config.Blueprint{
+				Groups: []config.Group{
+					{
+						Name: config.GroupName("primary"),
+						Modules: []config.Module{
+							{
+								ID:     config.ModuleID("netapp-vol"),
+								Source: "modules/file-system/netapp-volume",
+							},
+						},
+					},
+				},
+			},
+			want: "netapp",
+		},
+		{
+			name: "Extracts multiple standalone file-system modules sorted",
+			bp: config.Blueprint{
+				Groups: []config.Group{
+					{
+						Name: config.GroupName("primary"),
+						Modules: []config.Module{
+							{
+								ID:     config.ModuleID("ps"),
+								Source: "modules/file-system/parallelstore",
+							},
+							{
+								ID:     config.ModuleID("lustre"),
+								Source: "modules/file-system/managed-lustre",
+							},
+						},
+					},
+				},
+			},
+			want: "managed-lustre,parallelstore",
+		},
+		{
+			name: "Extracts standalone Managed Lustre source",
+			bp: config.Blueprint{
+				Groups: []config.Group{
+					{
+						Name: config.GroupName("primary"),
+						Modules: []config.Module{
+							{
+								ID:     config.ModuleID("fast-lustre"),
+								Source: "modules/file-system/managed-lustre",
+							},
+						},
+					},
+				},
+			},
+			want: "managed-lustre",
+		},
+		{
+			name: "Extracts standalone Parallelstore source",
+			bp: config.Blueprint{
+				Groups: []config.Group{
+					{
+						Name: config.GroupName("primary"),
+						Modules: []config.Module{
+							{
+								ID:     config.ModuleID("fast-ps"),
+								Source: "modules/file-system/parallelstore",
+							},
+						},
+					},
+				},
+			},
+			want: "parallelstore",
+		},
+		{
+			name: "Extracts Netapp service_level explicitly",
+			bp: config.Blueprint{
+				Groups: []config.Group{
+					{
+						Name: config.GroupName("primary"),
+						Modules: []config.Module{
+							{
+								ID:     config.ModuleID("netapp-pool"),
+								Source: "modules/file-system/netapp-storage-pool",
+								Settings: config.NewDict(map[string]cty.Value{
+									"service_level": cty.StringVal("EXTREME"),
+								}),
+							},
+						},
+					},
+				},
+			},
+			want: "netapp-extreme",
+		},
+		{
+			name: "Extracts Netapp service_level default",
+			bp: config.Blueprint{
+				Groups: []config.Group{
+					{
+						Name: config.GroupName("primary"),
+						Modules: []config.Module{
+							{
+								ID:     config.ModuleID("netapp-pool-def"),
+								Source: "../../modules/file-system/netapp-storage-pool",
+							},
+						},
+					},
+				},
+			},
+			want: "netapp-premium", // standard default from variables.tf
+		},
+		{
+			name: "Extracts storage_type from gke-storage explicitly",
+			bp: config.Blueprint{
+				Groups: []config.Group{
+					{
+						Name: config.GroupName("primary"),
+						Modules: []config.Module{
+							{
+								ID:     config.ModuleID("gke-stor"),
+								Source: "../../modules/file-system/gke-storage",
+								Settings: config.NewDict(map[string]cty.Value{
+									"storage_type": cty.StringVal("hyperdisk-extreme"),
+								}),
+							},
+						},
+					},
+				},
+			},
+			want: "hyperdisk-extreme",
+		},
+		{
 			name: "Extracts storage_class from GCS bucket",
 			bp: config.Blueprint{
 				Groups: []config.Group{
@@ -672,6 +801,47 @@ func TestGetStorageType(t *testing.T) {
 				},
 			},
 			want: "redis-basic,spanner-enterprise",
+		},
+		{
+			name: "Extracts database tier/edition defaults for Redis and Spanner",
+			bp: config.Blueprint{
+				Groups: []config.Group{
+					{
+						Name: config.GroupName("primary"),
+						Modules: []config.Module{
+							{
+								ID:     config.ModuleID("redis-def"),
+								Source: "../../modules/database/redis",
+							},
+							{
+								ID:     config.ModuleID("spanner-def"),
+								Source: "../../modules/database/spanner",
+							},
+						},
+					},
+				},
+			},
+			want: "redis-basic,spanner-standard",
+		},
+		{
+			name: "Extracts Netapp service_level explicitly with trimmed whitespace",
+			bp: config.Blueprint{
+				Groups: []config.Group{
+					{
+						Name: config.GroupName("primary"),
+						Modules: []config.Module{
+							{
+								ID:     config.ModuleID("netapp-pool"),
+								Source: "modules/file-system/netapp-storage-pool",
+								Settings: config.NewDict(map[string]cty.Value{
+									"service_level": cty.StringVal("  extreme  "),
+								}),
+							},
+						},
+					},
+				},
+			},
+			want: "netapp-extreme",
 		},
 		{
 			name: "Extracts fs_type from network_storage",
